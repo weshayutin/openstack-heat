@@ -283,7 +283,7 @@ Heat client tools accessible from the CLI
 %{_mandir}/man1/heat-watch.1.gz
 
 %changelog
-* Thu Mar 21 2012 Steven Dake <sdake@redhat.com> 2013.1-0.7.rc1
+* Thu Mar 21 2013 Steven Dake <sdake@redhat.com> 2013.1-0.7.rc1
 - Add all dependencies required
 - Remove buildrequires of python-glanceclient
 
