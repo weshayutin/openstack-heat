@@ -10,7 +10,7 @@
 Name:		openstack-heat
 Summary:	OpenStack Orchestration (heat)
 Version:	2013.1
-Release:	0.6.%{release_letter}%{milestone}%{?dist}
+Release:	0.7.%{release_letter}%{milestone}%{?dist}
 License:	ASL 2.0
 Group:		System Environment/Base
 URL:		http://www.openstack.org
@@ -90,23 +90,29 @@ Heat provides AWS CloudFormation and CloudWatch functionality for OpenStack.
 Summary: Heat common
 Group: System Environment/Base
 
+Requires: python-argparse
+Requires: python-boto
+Requires: python-crypto
 Requires: python-eventlet
-Requires: python-glance
 Requires: python-greenlet
 Requires: python-httplib2
 Requires: python-iso8601
-Requires: python-keystoneclient
 Requires: python-kombu
 Requires: python-lxml
-Requires: python-memcached
-Requires: python-migrate
-Requires: python-novaclient
 Requires: python-paste
-Requires: python-qpid
+Requires: python-cinderclient
+Requires: python-keystoneclient
+Requires: python-memcached
+Requires: python-novaclient
+Requires: python-oslo-config
+Requires: python-quantumclient
+Requires: python-swiftclient
 Requires: python-routes
-Requires: pysendfile
 Requires: python-sqlalchemy
+Requires: python-migrate
+Requires: python-qpid
 Requires: python-webob
+Requires: PyYAML
 
 Requires(pre): shadow-utils
 
@@ -277,6 +283,10 @@ Heat client tools accessible from the CLI
 %{_mandir}/man1/heat-watch.1.gz
 
 %changelog
+* Thu Mar 21 2012 Steven Dake <sdake@redhat.com> 2013.1-0.7.rc1
+- Add all dependencies required
+- Remove buildrequires of python-glanceclient
+
 * Wed Mar 20 2013 Jeff Peeler <jpeeler@redhat.com> 2013.1-0.6.rc1
 - Updated URL
 - Added version for Obsoletes
