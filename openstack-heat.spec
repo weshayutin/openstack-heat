@@ -1,9 +1,9 @@
 #
-# This is 2013.1 grizzly-rc1 milestone
+# This is 2013.1 grizzly-rc2 milestone
 #
 %global release_name grizzly
 %global release_letter rc
-%global milestone 1
+%global milestone 2
 
 %global with_doc %{!?_without_doc:1}%{?_without_doc:0}
 
@@ -306,6 +306,9 @@ Heat client tools accessible from the CLI
 %{_mandir}/man1/heat-watch.1.gz
 
 %changelog
+* Thu Mar 28 2013 Jeff Peeler <jpeeler@redhat.com> 2013.1-0.8.rc2
+- bump to rc2
+
 * Wed Mar 27 2013 Jeff Peeler <jpeeler@redhat.com> 2013.1-0.8.rc1
 - converted systemd scripts to sysvinit
 - changed buildrequires from python-sphinx to python-sphinx10
