@@ -10,7 +10,7 @@
 Name:		openstack-heat
 Summary:	OpenStack Orchestration (heat)
 Version:	2013.1
-Release:	0.7.%{release_letter}%{milestone}%{?dist}
+Release:	0.8.%{release_letter}%{milestone}%{?dist}
 License:	ASL 2.0
 Group:		System Environment/Base
 URL:		http://www.openstack.org
@@ -19,16 +19,15 @@ Obsoletes:	heat < 7-2
 Provides:	heat
 
 Source1:	heat.logrotate
-Source2:	openstack-heat-api.service
-Source3:	openstack-heat-api-cfn.service
-Source4:	openstack-heat-engine.service
-Source5:	openstack-heat-api-cloudwatch.service
+Source2:	openstack-heat-api.init
+Source3:	openstack-heat-api-cfn.init
+Source4:	openstack-heat-engine.init
+Source5:	openstack-heat-api-cloudwatch.init
 
 BuildArch: noarch
 BuildRequires: python2-devel
 BuildRequires: python-setuptools
-BuildRequires: python-sphinx
-BuildRequires: systemd-units
+BuildRequires: python-sphinx10
 
 Requires: %{name}-common = %{version}-%{release}
 Requires: %{name}-engine = %{version}-%{release}
@@ -49,21 +48,21 @@ sed -i -e '/^#!/,1 d' %{buildroot}/%{python_sitelib}/heat/db/sqlalchemy/manage.p
 sed -i -e '/^#!/,1 d' %{buildroot}/%{python_sitelib}/heat/db/sqlalchemy/migrate_repo/manage.py
 sed -i -e '/^#!/,1 d' %{buildroot}/%{python_sitelib}/heat/testing/runner.py
 mkdir -p %{buildroot}/var/log/heat/
-install -p -D -m 644 %{SOURCE1} %{buildroot}%{_sysconfdir}/logrotate.d/heat
+install -p -D -m 644 %{SOURCE1} %{buildroot}%{_sysconfdir}/logrotate.d/openstack-heat
 
-# install systemd unit files
-install -p -D -m 644 %{SOURCE2} %{buildroot}%{_unitdir}/openstack-heat-api.service
-install -p -D -m 644 %{SOURCE3} %{buildroot}%{_unitdir}/openstack-heat-api-cfn.service
-install -p -D -m 644 %{SOURCE4} %{buildroot}%{_unitdir}/openstack-heat-engine.service
-install -p -D -m 644 %{SOURCE5} %{buildroot}%{_unitdir}/openstack-heat-api-cloudwatch.service
+# install init scripts
+install -p -D -m 755 %{SOURCE2} %{buildroot}%{_initrddir}/openstack-heat-api
+install -p -D -m 755 %{SOURCE3} %{buildroot}%{_initrddir}/openstack-heat-api-cfn
+install -p -D -m 755 %{SOURCE4} %{buildroot}%{_initrddir}/openstack-heat-engine
+install -p -D -m 755 %{SOURCE5} %{buildroot}%{_initrddir}/openstack-heat-api-cloudwatch
 
 mkdir -p %{buildroot}/var/lib/heat/
 mkdir -p %{buildroot}/etc/heat/
 
 export PYTHONPATH="$( pwd ):$PYTHONPATH"
 pushd doc
-sphinx-build -b html -d build/doctrees source build/html
-sphinx-build -b man -d build/doctrees source build/man
+sphinx-1.0-build -b html -d build/doctrees source build/html
+sphinx-1.0-build -b man -d build/doctrees source build/man
 
 mkdir -p %{buildroot}%{_mandir}/man1
 install -p -D -m 644 build/man/*.1 %{buildroot}%{_mandir}/man1/
@@ -127,7 +126,7 @@ Components common to all OpenStack Heat services
 %dir %attr(0755,heat,root) %{_localstatedir}/log/heat
 %dir %attr(0755,heat,root) %{_sharedstatedir}/heat
 %dir %attr(0755,heat,root) %{_sysconfdir}/heat
-%config(noreplace) %{_sysconfdir}/logrotate.d/heat
+%config(noreplace) %{_sysconfdir}/logrotate.d/openstack-heat
 %{_mandir}/man1/heat-db-setup.1.gz
 %{_mandir}/man1/heat-keystone-setup.1.gz
 
@@ -145,9 +144,10 @@ Group: System Environment/Base
 
 Requires: %{name}-common = %{version}-%{release}
 
-Requires(post): systemd
-Requires(preun): systemd
-Requires(postun): systemd
+Requires(post): chkconfig
+Requires(preun): chkconfig
+Requires(preun): initscripts
+Requires(postun): initscripts
 
 %description engine
 OpenStack API for starting CloudFormation templates on OpenStack
@@ -156,17 +156,22 @@ OpenStack API for starting CloudFormation templates on OpenStack
 %doc README.rst LICENSE doc/build/html/man/heat-engine.html
 %{_bindir}/heat-engine
 %config(noreplace) %attr(-,root,heat) %{_sysconfdir}/heat/heat-engine.conf
-%{_unitdir}/openstack-heat-engine.service
+%{_initrddir}/openstack-heat-engine
 %{_mandir}/man1/heat-engine.1.gz
 
 %post engine
-%systemd_post openstack-heat-engine.service
+/sbin/chkconfig --add openstack-heat-engine
 
 %preun engine
-%systemd_preun openstack-heat-engine.service
+if [ $1 -eq 0 ]; then
+    /sbin/service openstack-heat-engine stop >/dev/null 2>&1
+    /sbin/chkconfig --del openstack-heat-engine
+fi
 
 %postun engine
-%systemd_postun_with_restart openstack-heat-engine.service
+if [ $1 -ge 1 ]; then
+    /sbin/service openstack-heat-engine condrestart >/dev/null 2>&1 || :
+fi
 
 
 %package api
@@ -175,9 +180,10 @@ Group: System Environment/Base
 
 Requires: %{name}-common = %{version}-%{release}
 
-Requires(post): systemd
-Requires(preun): systemd
-Requires(postun): systemd
+Requires(post): chkconfig
+Requires(preun): chkconfig
+Requires(preun): initscripts
+Requires(postun): initscripts
 
 %description api
 OpenStack-native ReST API to the Heat Engine
@@ -187,17 +193,22 @@ OpenStack-native ReST API to the Heat Engine
 %{_bindir}/heat-api
 %config(noreplace) %attr(-,root,heat) %{_sysconfdir}/heat/heat-api.conf
 %config(noreplace) %attr(-,root,heat) %{_sysconfdir}/heat/heat-api-paste.ini
-%{_unitdir}/openstack-heat-api.service
+%{_initrddir}/openstack-heat-api
 %{_mandir}/man1/heat-api.1.gz
 
 %post api
-%systemd_post openstack-heat-api.service
+/sbin/chkconfig --add openstack-heat-api
 
 %preun api
-%systemd_preun openstack-heat-api.service
+if [ $1 -eq 0 ]; then
+    /sbin/service openstack-heat-api stop >/dev/null 2>&1
+    /sbin/chkconfig --del openstack-heat-api
+fi
 
 %postun api
-%systemd_postun_with_restart openstack-heat-api.service
+if [ $1 -ge 1 ]; then
+    /sbin/service openstack-heat-api condrestart >/dev/null 2>&1 || :
+fi
 
 
 %package api-cfn
@@ -206,9 +217,10 @@ Group: System Environment/Base
 
 Requires: %{name}-common = %{version}-%{release}
 
-Requires(post): systemd
-Requires(preun): systemd
-Requires(postun): systemd
+Requires(post): chkconfig
+Requires(preun): chkconfig
+Requires(preun): initscripts
+Requires(postun): initscripts
 
 %description api-cfn
 AWS CloudFormation-compatible API to the Heat Engine
@@ -218,17 +230,22 @@ AWS CloudFormation-compatible API to the Heat Engine
 %{_bindir}/heat-api-cfn
 %config(noreplace) %attr(-,root,heat) %{_sysconfdir}/heat/heat-api-cfn.conf
 %config(noreplace) %attr(-,root,heat) %{_sysconfdir}/heat/heat-api-cfn-paste.ini
-%{_unitdir}/openstack-heat-api-cfn.service
+%{_initrddir}/openstack-heat-api-cfn
 %{_mandir}/man1/heat-api-cfn.1.gz
 
 %post api-cfn
-%systemd_post openstack-heat-api-cloudwatch.service
+/sbin/chkconfig --add openstack-heat-api-cfn
 
 %preun api-cfn
-%systemd_preun openstack-heat-api-cloudwatch.service
+if [ $1 -eq 0 ]; then
+    /sbin/service openstack-heat-api-cfn stop >/dev/null 2>&1
+    /sbin/chkconfig --del openstack-heat-api-cfn
+fi
 
 %postun api-cfn
-%systemd_postun_with_restart openstack-heat-api-cloudwatch.service
+if [ $1 -ge 1 ]; then
+    /sbin/service openstack-heat-api-cfn condrestart >/dev/null 2>&1 || :
+fi
 
 
 %package api-cloudwatch
@@ -237,9 +254,10 @@ Group: System Environment/Base
 
 Requires: %{name}-common = %{version}-%{release}
 
-Requires(post): systemd
-Requires(preun): systemd
-Requires(postun): systemd
+Requires(post): chkconfig
+Requires(preun): chkconfig
+Requires(preun): initscripts
+Requires(postun): initscripts
 
 %description api-cloudwatch
 AWS CloudWatch-compatible API to the Heat Engine
@@ -249,17 +267,22 @@ AWS CloudWatch-compatible API to the Heat Engine
 %{_bindir}/heat-api-cloudwatch
 %config(noreplace) %attr(-,root,heat) %{_sysconfdir}/heat/heat-api-cloudwatch.conf
 %config(noreplace) %attr(-,root,heat) %{_sysconfdir}/heat/heat-api-cloudwatch-paste.ini
-%{_unitdir}/openstack-heat-api-cloudwatch.service
+%{_initrddir}/openstack-heat-api-cloudwatch
 %{_mandir}/man1/heat-api-cloudwatch.1.gz
 
 %post api-cloudwatch
-%systemd_post openstack-heat-api-cfn.service
+/sbin/chkconfig --add openstack-heat-api-cloudwatch
 
 %preun api-cloudwatch
-%systemd_preun openstack-heat-api-cfn.service
+if [ $1 -eq 0 ]; then
+    /sbin/service openstack-heat-api-cloudwatch stop >/dev/null 2>&1
+    /sbin/chkconfig --del openstack-heat-api-cloudwatch
+fi
 
 %postun api-cloudwatch
-%systemd_postun_with_restart openstack-heat-api-cfn.service
+if [ $1 -ge 1 ]; then
+    /sbin/service openstack-heat-api-cloudwatch condrestart >/dev/null 2>&1 || :
+fi
 
 
 %package cli
@@ -283,6 +306,10 @@ Heat client tools accessible from the CLI
 %{_mandir}/man1/heat-watch.1.gz
 
 %changelog
+* Wed Mar 27 2013 Jeff Peeler <jpeeler@redhat.com> 2013.1-0.8.rc1
+- converted systemd scripts to sysvinit
+- changed buildrequires from python-sphinx to python-sphinx10
+
 * Thu Mar 21 2013 Steven Dake <sdake@redhat.com> 2013.1-0.7.rc1
 - Add all dependencies required
 - Remove buildrequires of python-glanceclient
