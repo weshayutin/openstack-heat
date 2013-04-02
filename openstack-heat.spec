@@ -10,7 +10,7 @@
 Name:		openstack-heat
 Summary:	OpenStack Orchestration (heat)
 Version:	2013.1
-Release:	0.8.%{release_letter}%{milestone}%{?dist}
+Release:	0.9.%{release_letter}%{milestone}%{?dist}
 License:	ASL 2.0
 Group:		System Environment/Base
 URL:		http://www.openstack.org
@@ -48,6 +48,7 @@ sed -i -e '/^#!/,1 d' %{buildroot}/%{python_sitelib}/heat/db/sqlalchemy/manage.p
 sed -i -e '/^#!/,1 d' %{buildroot}/%{python_sitelib}/heat/db/sqlalchemy/migrate_repo/manage.py
 sed -i -e '/^#!/,1 d' %{buildroot}/%{python_sitelib}/heat/testing/runner.py
 mkdir -p %{buildroot}/var/log/heat/
+mkdir -p %{buildroot}/var/run/heat/
 install -p -D -m 644 %{SOURCE1} %{buildroot}%{_sysconfdir}/logrotate.d/openstack-heat
 
 # install init scripts
@@ -124,6 +125,7 @@ Components common to all OpenStack Heat services
 %{_bindir}/heat-keystone-setup
 %{python_sitelib}/heat*
 %dir %attr(0755,heat,root) %{_localstatedir}/log/heat
+%dir %attr(0755,heat,root) %{_localstatedir}/run/heat
 %dir %attr(0755,heat,root) %{_sharedstatedir}/heat
 %dir %attr(0755,heat,root) %{_sysconfdir}/heat
 %config(noreplace) %{_sysconfdir}/logrotate.d/openstack-heat
@@ -306,6 +308,9 @@ Heat client tools accessible from the CLI
 %{_mandir}/man1/heat-watch.1.gz
 
 %changelog
+* Mon Apr  1 2013 Jeff Peeler <jpeeler@redhat.com> 2013.1-0.9.rc2
+- add /var/run/heat so PID directory has correct permissions
+
 * Thu Mar 28 2013 Jeff Peeler <jpeeler@redhat.com> 2013.1-0.8.rc2
 - bump to rc2
 
