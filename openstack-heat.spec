@@ -10,7 +10,7 @@
 Name:		openstack-heat
 Summary:	OpenStack Orchestration (heat)
 Version:	2013.1
-Release:	0.9.%{release_letter}%{milestone}%{?dist}
+Release:	1.0.%{release_letter}%{milestone}%{?dist}
 License:	ASL 2.0
 Group:		System Environment/Base
 URL:		http://www.openstack.org
@@ -24,10 +24,18 @@ Source3:	openstack-heat-api-cfn.init
 Source4:	openstack-heat-engine.init
 Source5:	openstack-heat-api-cloudwatch.init
 
+# EPEL specific patch, not upstream
+Patch100: heat-newdeps.patch
+
 BuildArch: noarch
 BuildRequires: python2-devel
 BuildRequires: python-setuptools
 BuildRequires: python-sphinx10
+# These are required to build due to the requirements check added
+BuildRequires: python-paste-deploy1.5
+BuildRequires: python-routes1.12
+BuildRequires: python-sqlalchemy0.7
+BuildRequires: python-webob1.0
 
 Requires: %{name}-common = %{version}-%{release}
 Requires: %{name}-engine = %{version}-%{release}
@@ -38,6 +46,8 @@ Requires: %{name}-cli = %{version}-%{release}
 
 %prep
 %setup -q -n heat-%{version}.%{release_letter}%{milestone}
+
+%patch100 -p1
 
 %build
 %{__python} setup.py build
@@ -99,7 +109,6 @@ Requires: python-httplib2
 Requires: python-iso8601
 Requires: python-kombu
 Requires: python-lxml
-Requires: python-paste
 Requires: python-cinderclient
 Requires: python-keystoneclient
 Requires: python-memcached
@@ -107,12 +116,14 @@ Requires: python-novaclient
 Requires: python-oslo-config
 Requires: python-quantumclient
 Requires: python-swiftclient
-Requires: python-routes
-Requires: python-sqlalchemy
 Requires: python-migrate
 Requires: python-qpid
-Requires: python-webob
 Requires: PyYAML
+
+Requires: python-paste-deploy1.5
+Requires: python-routes1.12
+Requires: python-sqlalchemy0.7
+Requires: python-webob1.0
 
 Requires(pre): shadow-utils
 
@@ -308,6 +319,11 @@ Heat client tools accessible from the CLI
 %{_mandir}/man1/heat-watch.1.gz
 
 %changelog
+* Tue Apr  2 2013 Jeff Peeler <jpeeler@redhat.com> 2013.1-1.0.rc2
+- added epel patch for dependencies
+- added new buildrequires due to above patch
+- changed requires to more recent versions
+
 * Mon Apr  1 2013 Jeff Peeler <jpeeler@redhat.com> 2013.1-0.9.rc2
 - add /var/run/heat so PID directory has correct permissions
 
