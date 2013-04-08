@@ -1,20 +1,15 @@
-#
-# This is 2013.1 grizzly-rc2 milestone
-#
 %global release_name grizzly
-%global release_letter rc
-%global milestone 2
 
 %global with_doc %{!?_without_doc:1}%{?_without_doc:0}
 
 Name:		openstack-heat
 Summary:	OpenStack Orchestration (heat)
 Version:	2013.1
-Release:	0.7.%{release_letter}%{milestone}%{?dist}
+Release:	1.0%{?dist}
 License:	ASL 2.0
 Group:		System Environment/Base
 URL:		http://www.openstack.org
-Source0:	https://launchpad.net/heat/%{release_name}/%{release_name}-%{release_letter}%{milestone}/+download/heat-%{version}.%{release_letter}%{milestone}.tar.gz
+Source0:	https://launchpad.net/heat/%{release_name}/%{version}/+download/heat-%{version}.tar.gz
 Obsoletes:	heat < 7-2
 Provides:	heat
 
@@ -38,7 +33,7 @@ Requires: %{name}-api-cloudwatch = %{version}-%{release}
 Requires: %{name}-cli = %{version}-%{release}
 
 %prep
-%setup -q -n heat-%{version}.%{release_letter}%{milestone}
+%setup -q -n heat-%{version}
 
 %build
 %{__python} setup.py build
@@ -72,15 +67,15 @@ popd
 rm -rf %{buildroot}/var/lib/heat/.dummy
 rm -f %{buildroot}/usr/bin/cinder-keystone-setup
 
-install -p -D -m 640 %{_builddir}/heat-%{version}.%{release_letter}%{milestone}/etc/heat/heat-api.conf %{buildroot}/%{_sysconfdir}/heat
-install -p -D -m 640 %{_builddir}/heat-%{version}.%{release_letter}%{milestone}/etc/heat/heat-api-paste.ini %{buildroot}/%{_sysconfdir}/heat
-install -p -D -m 640 %{_builddir}/heat-%{version}.%{release_letter}%{milestone}/etc/heat/heat-api-cfn.conf %{buildroot}/%{_sysconfdir}/heat
-install -p -D -m 640 %{_builddir}/heat-%{version}.%{release_letter}%{milestone}/etc/heat/heat-api-cfn-paste.ini %{buildroot}/%{_sysconfdir}/heat
-install -p -D -m 640 %{_builddir}/heat-%{version}.%{release_letter}%{milestone}/etc/heat/heat-api-cloudwatch.conf %{buildroot}/%{_sysconfdir}/heat
-install -p -D -m 640 %{_builddir}/heat-%{version}.%{release_letter}%{milestone}/etc/heat/heat-api-cloudwatch-paste.ini %{buildroot}/%{_sysconfdir}/heat
-install -p -D -m 640 %{_builddir}/heat-%{version}.%{release_letter}%{milestone}/etc/heat/heat-engine.conf %{buildroot}/%{_sysconfdir}/heat
-install -p -D -m 640 %{_builddir}/heat-%{version}.%{release_letter}%{milestone}/etc/boto.cfg %{buildroot}/%{_sysconfdir}/heat
-install -p -D -m 644 %{_builddir}/heat-%{version}.%{release_letter}%{milestone}/etc/bash_completion.d/heat-cfn %{buildroot}/%{_sysconfdir}/bash_completion.d/heat-cfn
+install -p -D -m 640 %{_builddir}/heat-%{version}/etc/heat/heat-api.conf %{buildroot}/%{_sysconfdir}/heat
+install -p -D -m 640 %{_builddir}/heat-%{version}/etc/heat/heat-api-paste.ini %{buildroot}/%{_sysconfdir}/heat
+install -p -D -m 640 %{_builddir}/heat-%{version}/etc/heat/heat-api-cfn.conf %{buildroot}/%{_sysconfdir}/heat
+install -p -D -m 640 %{_builddir}/heat-%{version}/etc/heat/heat-api-cfn-paste.ini %{buildroot}/%{_sysconfdir}/heat
+install -p -D -m 640 %{_builddir}/heat-%{version}/etc/heat/heat-api-cloudwatch.conf %{buildroot}/%{_sysconfdir}/heat
+install -p -D -m 640 %{_builddir}/heat-%{version}/etc/heat/heat-api-cloudwatch-paste.ini %{buildroot}/%{_sysconfdir}/heat
+install -p -D -m 640 %{_builddir}/heat-%{version}/etc/heat/heat-engine.conf %{buildroot}/%{_sysconfdir}/heat
+install -p -D -m 640 %{_builddir}/heat-%{version}/etc/boto.cfg %{buildroot}/%{_sysconfdir}/heat
+install -p -D -m 644 %{_builddir}/heat-%{version}/etc/bash_completion.d/heat-cfn %{buildroot}/%{_sysconfdir}/bash_completion.d/heat-cfn
 
 %description
 Heat provides AWS CloudFormation and CloudWatch functionality for OpenStack.
@@ -283,6 +278,9 @@ Heat client tools accessible from the CLI
 %{_mandir}/man1/heat-watch.1.gz
 
 %changelog
+* Mon Apr  8 2013 Jeff Peeler <jpeeler@redhat.com> 2013.1-1
+- update to grizzly final
+
 * Thu Mar 28 2013 Jeff Peeler <jpeeler@redhat.com> 2013.1-0.7.rc2
 - bump to rc2
 
