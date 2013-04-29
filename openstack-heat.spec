@@ -5,7 +5,7 @@
 Name:		openstack-heat
 Summary:	OpenStack Orchestration (heat)
 Version:	2013.1
-Release:	1.0%{?dist}
+Release:	1.1%{?dist}
 License:	ASL 2.0
 Group:		System Environment/Base
 URL:		http://www.openstack.org
@@ -278,7 +278,10 @@ Heat client tools accessible from the CLI
 %{_mandir}/man1/heat-watch.1.gz
 
 %changelog
-* Mon Apr  8 2013 Jeff Peeler <jpeeler@redhat.com> 2013.1-1
+* Mon Apr 29 2013 Jeff Peeler <jpeeler@redhat.com> 2013.1-1.1
+- modified engine script to not require full openstack install to start
+
+* Mon Apr  8 2013 Jeff Peeler <jpeeler@redhat.com> 2013.1-1.0
 - update to grizzly final
 
 * Thu Mar 28 2013 Jeff Peeler <jpeeler@redhat.com> 2013.1-0.7.rc2
