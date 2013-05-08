@@ -5,7 +5,7 @@
 Name:		openstack-heat
 Summary:	OpenStack Orchestration (heat)
 Version:	2013.1
-Release:	1.1%{?dist}
+Release:	1.2%{?dist}
 License:	ASL 2.0
 Group:		System Environment/Base
 URL:		http://www.openstack.org
@@ -18,6 +18,8 @@ Source2:	openstack-heat-api.service
 Source3:	openstack-heat-api-cfn.service
 Source4:	openstack-heat-engine.service
 Source5:	openstack-heat-api-cloudwatch.service
+
+Patch0: switch-to-using-m2crypto.patch
 
 BuildArch: noarch
 BuildRequires: python2-devel
@@ -34,6 +36,7 @@ Requires: %{name}-cli = %{version}-%{release}
 
 %prep
 %setup -q -n heat-%{version}
+%patch0 -p1
 
 %build
 %{__python} setup.py build
@@ -108,6 +111,7 @@ Requires: python-migrate
 Requires: python-qpid
 Requires: python-webob
 Requires: PyYAML
+Requires: m2crypto
 
 Requires(pre): shadow-utils
 
@@ -278,6 +282,9 @@ Heat client tools accessible from the CLI
 %{_mandir}/man1/heat-watch.1.gz
 
 %changelog
+* Wed May  8 2013 Jeff Peeler <jpeeler@redhat.com> 2013.1-1.2
+- re-added m2crypto patch (rhbz960165)
+
 * Mon Apr 29 2013 Jeff Peeler <jpeeler@redhat.com> 2013.1-1.1
 - modified engine script to not require full openstack install to start
 
