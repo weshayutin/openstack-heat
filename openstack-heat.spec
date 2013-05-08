@@ -19,6 +19,8 @@ Source3:	openstack-heat-api-cfn.init
 Source4:	openstack-heat-engine.init
 Source5:	openstack-heat-api-cloudwatch.init
 
+
+Patch0: switch-to-using-m2crypto.patch
 # EPEL specific patch, not upstream
 Patch100: heat-newdeps.patch
 
@@ -41,7 +43,7 @@ Requires: %{name}-cli = %{version}-%{release}
 
 %prep
 %setup -q -n heat-%{version}
-
+%patch0 -p1
 %patch100 -p1
 
 %build
@@ -114,6 +116,7 @@ Requires: python-swiftclient
 Requires: python-migrate
 Requires: python-qpid
 Requires: PyYAML
+Requires: m2crypto
 
 Requires: python-paste-deploy1.5
 Requires: python-routes1.12
@@ -314,7 +317,10 @@ Heat client tools accessible from the CLI
 %{_mandir}/man1/heat-watch.1.gz
 
 %changelog
-* Mon Apr  8 2013 Jeff Peeler <jpeeler@redhat.com> 2013.1-1.1
+* Wed May  8 2013 Jeff Peeler <jpeeler@redhat.com> 2013.1-1.1
+- re-added m2crypto patch (rhbz960165)
+
+* Mon Apr  8 2013 Jeff Peeler <jpeeler@redhat.com> 2013.1-1.0
 - update to grizzly final
 
 * Tue Apr  2 2013 Jeff Peeler <jpeeler@redhat.com> 2013.1-1.0.rc2
