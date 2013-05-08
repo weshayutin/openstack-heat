@@ -5,7 +5,7 @@
 Name:		openstack-heat
 Summary:	OpenStack Orchestration (heat)
 Version:	2013.1
-Release:	1.2%{?dist}
+Release:	1.3%{?dist}
 License:	ASL 2.0
 Group:		System Environment/Base
 URL:		http://www.openstack.org
@@ -90,7 +90,6 @@ Group: System Environment/Base
 
 Requires: python-argparse
 Requires: python-boto
-Requires: python-crypto
 Requires: python-eventlet
 Requires: python-greenlet
 Requires: python-httplib2
@@ -282,6 +281,9 @@ Heat client tools accessible from the CLI
 %{_mandir}/man1/heat-watch.1.gz
 
 %changelog
+* Wed May  8 2013 Jeff Peeler <jpeeler@redhat.com> 2013.1-1.3
+- removed python-crypto require
+
 * Wed May  8 2013 Jeff Peeler <jpeeler@redhat.com> 2013.1-1.2
 - re-added m2crypto patch (rhbz960165)
 
