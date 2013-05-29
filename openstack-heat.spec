@@ -5,12 +5,12 @@
 Name:		openstack-heat
 Summary:	OpenStack Orchestration (heat)
 Version:	2013.1
-Release:	1.2%{?dist}
+Release:	1.3%{?dist}
 License:	ASL 2.0
 Group:		System Environment/Base
 URL:		http://www.openstack.org
 Source0:	https://launchpad.net/heat/%{release_name}/%{version}/+download/heat-%{version}.tar.gz
-Obsoletes:	heat < 7-2
+Obsoletes:	heat < 7-9
 Provides:	heat
 
 Source1:	heat.logrotate
@@ -88,6 +88,7 @@ install -p -D -m 640 %{_builddir}/heat-%{version}/etc/heat/heat-api-cloudwatch-p
 install -p -D -m 640 %{_builddir}/heat-%{version}/etc/heat/heat-engine.conf %{buildroot}/%{_sysconfdir}/heat
 install -p -D -m 640 %{_builddir}/heat-%{version}/etc/boto.cfg %{buildroot}/%{_sysconfdir}/heat
 install -p -D -m 644 %{_builddir}/heat-%{version}/etc/bash_completion.d/heat-cfn %{buildroot}/%{_sysconfdir}/bash_completion.d/heat-cfn
+install -p -D -m 640 etc/heat/policy.json %{buildroot}/%{_sysconfdir}/heat
 
 %description
 Heat provides AWS CloudFormation and CloudWatch functionality for OpenStack.
@@ -137,6 +138,7 @@ Components common to all OpenStack Heat services
 %dir %attr(0755,heat,root) %{_sharedstatedir}/heat
 %dir %attr(0755,heat,root) %{_sysconfdir}/heat
 %config(noreplace) %{_sysconfdir}/logrotate.d/openstack-heat
+%config(noreplace) %attr(-, root, heat) %{_sysconfdir}/heat/policy.json
 %{_mandir}/man1/heat-db-setup.1.gz
 %{_mandir}/man1/heat-keystone-setup.1.gz
 
@@ -316,6 +318,10 @@ Heat client tools accessible from the CLI
 %{_mandir}/man1/heat-watch.1.gz
 
 %changelog
+* Tue May 28 2013 Jeff Peeler <jpeeler@redhat.com> 2013.1-1.3
+- bumped obsoletes for f18 rebuilds of the old heat package
+- added missing policy.json file (rhbz#965549)
+
 * Wed May  8 2013 Jeff Peeler <jpeeler@redhat.com> 2013.1-1.2
 - removed python-crypto require
 
