@@ -8,28 +8,24 @@ and decryption of user authentication information.
 
 ---
 diff --git a/heat/common/crypt.py b/heat/common/crypt.py
-index 28c11f5..2fb0c98 100644
+index 81b4c92..9c67dc1 100644
 --- a/heat/common/crypt.py
 +++ b/heat/common/crypt.py
-@@ -14,8 +14,8 @@
+@@ -14,7 +14,7 @@
  #    under the License.
  
  import base64
 -from Crypto.Cipher import AES
--from Crypto import Random
 +import M2Crypto
-+from os import urandom
+ from os import urandom
  
  from oslo.config import cfg
- 
-@@ -36,9 +36,11 @@ logger = logging.getLogger(__name__)
- def encrypt(auth_info):
+@@ -37,8 +37,10 @@ def encrypt(auth_info):
      if auth_info is None:
          return None
--    iv = Random.new().read(AES.block_size)
+     iv = urandom(AES.block_size)
 -    cipher = AES.new(cfg.CONF.auth_encryption_key[:32], AES.MODE_CFB, iv)
 -    res = base64.b64encode(iv + cipher.encrypt(auth_info))
-+    iv = urandom(16)
 +    cipher = M2Crypto.EVP.Cipher(alg='aes_128_cbc',
 +                                 key=cfg.CONF.auth_encryption_key[:32], iv=iv,
 +                                 op=1) # 1 is encode
@@ -52,9 +48,9 @@ index 28c11f5..2fb0c98 100644
      return res
 diff --git a/tools/pip-requires b/tools/pip-requires
 index 06795f9..091168c 100644
---- a/tools/pip-requires
-+++ b/tools/pip-requires
-@@ -9,7 +9,7 @@
+--- a/requirements.txt
++++ b/requirements.txt
+@@ -12,7 +12,7 @@
  # installed using pip, therefore you will need to install the
  # libxml2-dev(el) and libxslt-dev(el) packages.
  
