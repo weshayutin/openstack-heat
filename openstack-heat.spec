@@ -1,15 +1,18 @@
-%global release_name grizzly
+%global release_name havana
+%global release_letter b
+%global milestone 1
+%global full_release heat-%{version}.%{release_letter}%{milestone}
 
 %global with_doc %{!?_without_doc:1}%{?_without_doc:0}
 
 Name:		openstack-heat
 Summary:	OpenStack Orchestration (heat)
-Version:	2013.1
-Release:	1.4%{?dist}
+Version:	2013.2
+Release:	0.1.%{release_letter}%{milestone}%{?dist}
 License:	ASL 2.0
 Group:		System Environment/Base
 URL:		http://www.openstack.org
-Source0:	https://launchpad.net/heat/%{release_name}/%{version}/+download/heat-%{version}.tar.gz
+Source0:	https://launchpad.net/heat/%{release_name}/%{release_name}-%{milestone}/+download/%{full_release}.tar.gz
 Obsoletes:	heat < 7-9
 Provides:	heat
 
@@ -20,11 +23,15 @@ Source4:	openstack-heat-engine.service
 Source5:	openstack-heat-api-cloudwatch.service
 
 Patch0: switch-to-using-m2crypto.patch
+# bug fix already committed upstream, fixes autoscaling
+Patch1: bug1186389.patch
 
 BuildArch: noarch
 BuildRequires: python2-devel
 BuildRequires: python-setuptools
 BuildRequires: python-sphinx
+BuildRequires: python-pbr
+BuildRequires: python-d2to1
 BuildRequires: systemd-units
 
 Requires: %{name}-common = %{version}-%{release}
@@ -35,8 +42,9 @@ Requires: %{name}-api-cloudwatch = %{version}-%{release}
 Requires: %{name}-cli = %{version}-%{release}
 
 %prep
-%setup -q -n heat-%{version}
+%setup -q -n %{full_release}
 %patch0 -p1
+%patch1 -p1
 
 %build
 %{__python} setup.py build
@@ -45,7 +53,6 @@ Requires: %{name}-cli = %{version}-%{release}
 %{__python} setup.py install -O1 --skip-build --root=%{buildroot}
 sed -i -e '/^#!/,1 d' %{buildroot}/%{python_sitelib}/heat/db/sqlalchemy/manage.py
 sed -i -e '/^#!/,1 d' %{buildroot}/%{python_sitelib}/heat/db/sqlalchemy/migrate_repo/manage.py
-sed -i -e '/^#!/,1 d' %{buildroot}/%{python_sitelib}/heat/testing/runner.py
 mkdir -p %{buildroot}/var/log/heat/
 install -p -D -m 644 %{SOURCE1} %{buildroot}%{_sysconfdir}/logrotate.d/heat
 
@@ -70,15 +77,13 @@ popd
 rm -rf %{buildroot}/var/lib/heat/.dummy
 rm -f %{buildroot}/usr/bin/cinder-keystone-setup
 
-install -p -D -m 640 %{_builddir}/heat-%{version}/etc/heat/heat-api.conf %{buildroot}/%{_sysconfdir}/heat
-install -p -D -m 640 %{_builddir}/heat-%{version}/etc/heat/heat-api-paste.ini %{buildroot}/%{_sysconfdir}/heat
-install -p -D -m 640 %{_builddir}/heat-%{version}/etc/heat/heat-api-cfn.conf %{buildroot}/%{_sysconfdir}/heat
-install -p -D -m 640 %{_builddir}/heat-%{version}/etc/heat/heat-api-cfn-paste.ini %{buildroot}/%{_sysconfdir}/heat
-install -p -D -m 640 %{_builddir}/heat-%{version}/etc/heat/heat-api-cloudwatch.conf %{buildroot}/%{_sysconfdir}/heat
-install -p -D -m 640 %{_builddir}/heat-%{version}/etc/heat/heat-api-cloudwatch-paste.ini %{buildroot}/%{_sysconfdir}/heat
-install -p -D -m 640 %{_builddir}/heat-%{version}/etc/heat/heat-engine.conf %{buildroot}/%{_sysconfdir}/heat
-install -p -D -m 640 %{_builddir}/heat-%{version}/etc/boto.cfg %{buildroot}/%{_sysconfdir}/heat
-install -p -D -m 644 %{_builddir}/heat-%{version}/etc/bash_completion.d/heat-cfn %{buildroot}/%{_sysconfdir}/bash_completion.d/heat-cfn
+install -p -D -m 640 %{_builddir}/%{full_release}/etc/heat/heat-api.conf %{buildroot}/%{_sysconfdir}/heat
+install -p -D -m 640 %{_builddir}/%{full_release}/etc/heat/api-paste.ini %{buildroot}/%{_sysconfdir}/heat
+install -p -D -m 640 %{_builddir}/%{full_release}/etc/heat/heat-api-cfn.conf %{buildroot}/%{_sysconfdir}/heat
+install -p -D -m 640 %{_builddir}/%{full_release}/etc/heat/heat-api-cloudwatch.conf %{buildroot}/%{_sysconfdir}/heat
+install -p -D -m 640 %{_builddir}/%{full_release}/etc/heat/heat-engine.conf %{buildroot}/%{_sysconfdir}/heat
+install -p -D -m 640 %{_builddir}/%{full_release}/etc/boto.cfg %{buildroot}/%{_sysconfdir}/heat
+install -p -D -m 644 %{_builddir}/%{full_release}/etc/bash_completion.d/heat-cfn %{buildroot}/%{_sysconfdir}/bash_completion.d/heat-cfn
 install -p -D -m 640 etc/heat/policy.json %{buildroot}/%{_sysconfdir}/heat
 
 %description
@@ -128,6 +133,7 @@ Components common to all OpenStack Heat services
 %dir %attr(0755,heat,root) %{_sysconfdir}/heat
 %config(noreplace) %{_sysconfdir}/logrotate.d/heat
 %config(noreplace) %attr(-, root, heat) %{_sysconfdir}/heat/policy.json
+%config(noreplace) %attr(-,root,heat) %{_sysconfdir}/heat/api-paste.ini
 %{_mandir}/man1/heat-db-setup.1.gz
 %{_mandir}/man1/heat-keystone-setup.1.gz
 
@@ -186,7 +192,6 @@ OpenStack-native ReST API to the Heat Engine
 %doc README.rst LICENSE doc/build/html/man/heat-api.html
 %{_bindir}/heat-api
 %config(noreplace) %attr(-,root,heat) %{_sysconfdir}/heat/heat-api.conf
-%config(noreplace) %attr(-,root,heat) %{_sysconfdir}/heat/heat-api-paste.ini
 %{_unitdir}/openstack-heat-api.service
 %{_mandir}/man1/heat-api.1.gz
 
@@ -217,7 +222,6 @@ AWS CloudFormation-compatible API to the Heat Engine
 %doc README.rst LICENSE doc/build/html/man/heat-api-cfn.html
 %{_bindir}/heat-api-cfn
 %config(noreplace) %attr(-,root,heat) %{_sysconfdir}/heat/heat-api-cfn.conf
-%config(noreplace) %attr(-,root,heat) %{_sysconfdir}/heat/heat-api-cfn-paste.ini
 %{_unitdir}/openstack-heat-api-cfn.service
 %{_mandir}/man1/heat-api-cfn.1.gz
 
@@ -248,7 +252,6 @@ AWS CloudWatch-compatible API to the Heat Engine
 %doc README.rst LICENSE doc/build/html/man/heat-api-cloudwatch.html
 %{_bindir}/heat-api-cloudwatch
 %config(noreplace) %attr(-,root,heat) %{_sysconfdir}/heat/heat-api-cloudwatch.conf
-%config(noreplace) %attr(-,root,heat) %{_sysconfdir}/heat/heat-api-cloudwatch-paste.ini
 %{_unitdir}/openstack-heat-api-cloudwatch.service
 %{_mandir}/man1/heat-api-cloudwatch.1.gz
 
@@ -276,6 +279,7 @@ Heat client tools accessible from the CLI
 %{_bindir}/heat-boto
 %{_bindir}/heat-cfn
 %{_bindir}/heat-watch
+%{_bindir}/heat-manage
 %config(noreplace) %{_sysconfdir}/bash_completion.d/heat-cfn
 %config(noreplace) %attr(-,root,heat) %{_sysconfdir}/heat/boto.cfg
 %{_mandir}/man1/heat-cfn.1.gz
@@ -283,6 +287,13 @@ Heat client tools accessible from the CLI
 %{_mandir}/man1/heat-watch.1.gz
 
 %changelog
+* Tue Jun  4 2013 Jeff Peeler <jpeeler@redhat.com> 2013.2-0.1.b1
+- rebase to havana-1
+- consolidate api-paste files into one file in common
+- removed runner.py as it is no longer present
+- added heat-manage
+- added new buildrequires pbr and d2to1
+
 * Tue May 28 2013 Jeff Peeler <jpeeler@redhat.com> 2013.1-1.4
 - bumped obsoletes for f18 rebuilds of the old heat package
 - added missing policy.json file (rhbz#965549)
