@@ -7,8 +7,8 @@
 
 Name:		openstack-heat
 Summary:	OpenStack Orchestration (heat)
-Version:	2013.2
-Release:	0.2.%{release_letter}%{milestone}%{?dist}
+Version:	2013.3
+Release:	1%{release_letter}%{milestone}%{?dist}
 License:	ASL 2.0
 Group:		System Environment/Base
 URL:		http://www.openstack.org
@@ -287,6 +287,9 @@ Heat client tools accessible from the CLI
 %{_mandir}/man1/heat-watch.1.gz
 
 %changelog
+* Tue Aug 13 2013 wes hayutin <whayutin@redhat.com> 2013.3-1b1
+- new package built with tito
+
 * Mon Jun 10 2013 Jeff Peeler <jpeeler@redhat.com> 2013.2-0.2.b1
 - fix m2crypto patch
 
